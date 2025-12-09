@@ -1,10 +1,23 @@
 export class Laboratory {
     private stock: Map<string, number>;
+    public allReactions: any;
 
-    constructor(substances: string[]) {
+    constructor(substances: string[], reactions: any = {}) {
         this.stock = new Map();
-        const uniqueSubstances = new Set(substances);
-        uniqueSubstances.forEach(s => this.stock.set(s, 0));
+        this.allReactions = reactions;
+
+        // Init substances
+        substances.forEach(s => this.stock.set(s, 0));
+
+        // Init produits : boucle for..in sur l'objet any
+        for (let key in reactions) {
+            if (Object.prototype.hasOwnProperty.call(reactions, key)) {
+                // Si pas déjà présent (pour gérer la collision)
+                if (!this.stock.has(key)) {
+                    this.stock.set(key, 0);
+                }
+            }
+        }
     }
 
     getQuantity(substance: string): number {
