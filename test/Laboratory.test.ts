@@ -32,9 +32,10 @@ describe('Add Stock', () => {
 
     it('should accumulate quantities correctly (integers and floats)', () => {
         const lab = new Laboratory(['H2O']);
-        lab.add('H2O', 10);
-        lab.add('H2O', 0.5);
-        expect(lab.getQuantity('H2O')).toBe(10.5);
+        lab.add('H2O', 1);
+        lab.add('H2O', 2.72);
+        lab.add('H2O', 6.58);
+        expect(lab.getQuantity('H2O')).toBe(10.3);
     });
 
     it('should do nothing if adding 0', () => {
@@ -51,5 +52,31 @@ describe('Add Stock', () => {
     it('should throw error when adding to unknown substance', () => {
         const lab = new Laboratory(['H2O']);
         expect(() => lab.add('Gold', 10)).toThrow('Unknown substance');
+    });
+});
+
+describe('Reactions & Products', () => {
+    it('should register products defined in reactions as valid substances', () => {
+        const reactions = { 
+            'Ice': [{ substance: 'Water', quantity: 1 }] 
+        };
+
+        const lab = new Laboratory(['Water'], reactions);
+        expect(lab.getQuantity('Ice')).toBe(0);
+    });
+
+    it('should allow adding stock directly to a product', () => {
+        const reactions = { 'Ice': [{ substance: 'Water', quantity: 1 }] };
+        const lab = new Laboratory(['Water'], reactions);
+        
+        lab.add('Ice', 10);
+        expect(lab.getQuantity('Ice')).toBe(10);
+    });
+
+    it('should handle name collisions gracefully (substance declared as base AND product)', () => {
+        const reactions = { 'Water': [{ substance: 'Hydrogen', quantity: 2 }] };
+        const lab = new Laboratory(['Water'], reactions);
+
+        expect(lab.getQuantity('Water')).toBe(0);
     });
 });
