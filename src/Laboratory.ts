@@ -6,8 +6,8 @@ export interface Ingredient {
 export type Reactions = Record<string, Ingredient[]>;
 
 export class Laboratory {
-    private stock: Map<string, number>;
-    private reactions: Reactions;
+    private readonly stock: Map<string, number>;
+    private readonly reactions: Reactions;
 
     constructor(substances: string[], reactions: Reactions = {}) {
         this.stock = new Map();
@@ -42,37 +42,35 @@ export class Laboratory {
         return this.reactions;
     }
 
-    make(product: string, desiredQty: number): number {
-        if (!this.reactions[product]) throw new Error('Unknown recipe');
-        
-        let rec = this.reactions[product];
-        let max = desiredQty;
-
-        for (let ing of rec) {
-            let ingName = ing.substance;
-            let neededPerUnit = ing.quantity;
-            let stock = this.stock.get(ingName);
-            
-            if(stock === undefined) {
-                 stock = 0; 
-            }
-            
-            let possible = stock / neededPerUnit;
-            if (possible < max) {
-                max = possible;
-            }
+    private calculateMaxProduction(ingredients: Ingredient[], desired: number): number {
+        let max = desired;
+        for (const ing of ingredients) {
+            const available = this.getQuantity(ing.substance);
+            const possible = available / ing.quantity;
+            if (possible < max) max = possible;
         }
-
-        for (let ing of rec) {
-            let ingName = ing.substance;
-            let neededPerUnit = ing.quantity;
-            let current = this.stock.get(ingName) || 0;
-            this.stock.set(ingName, current - (neededPerUnit * max));
-        }
-
-        let currentP = this.stock.get(product) || 0;
-        this.stock.set(product, currentP + max);
-
         return max;
+    }
+
+    private consumeIngredients(ingredients: Ingredient[], amount: number): void {
+        for (const ing of ingredients) {
+            const needed = ing.quantity * amount;
+            const current = this.getQuantity(ing.substance);
+            this.stock.set(ing.substance, current - needed);
+        }
+    }
+
+    make(product: string, quantity: number): number {
+        if (!this.reactions[product]) {
+            throw new Error('Unknown recipe');
+        }
+
+        const ingredients = this.reactions[product];
+        const actualQuantity = this.calculateMaxProduction(ingredients, quantity);
+
+        this.consumeIngredients(ingredients, actualQuantity);
+        this.add(product, actualQuantity);
+
+        return actualQuantity;
     }
 }
