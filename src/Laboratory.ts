@@ -1,27 +1,16 @@
 export class Laboratory {
-    list: any[] = [];
-    stockValues: any[] = [];
+    private stock: Map<string, number>;
 
-    constructor(substances: any) {
-        this.list = substances;
-        for(let i = 0; i < substances.length; i++) {
-            this.stockValues[i] = 0;
-        }
+    constructor(substances: string[]) {
+        this.stock = new Map();
+        const uniqueSubstances = new Set(substances);
+        uniqueSubstances.forEach(s => this.stock.set(s, 0));
     }
 
-    getQuantity(substance: any): number {
-        let index = -1;
-        for(let i = 0; i < this.list.length; i++) {
-            if (this.list[i] === substance) {
-                index = i;
-                break;
-            }
-        }
-
-        if (index === -1) {
+    getQuantity(substance: string): number {
+        if (!this.stock.has(substance)) {
             throw new Error('Unknown substance');
         }
-
-        return this.stockValues[index];
+        return this.stock.get(substance) || 0;
     }
 }
