@@ -126,3 +126,35 @@ describe('Making Products (Basic)', () => {
         expect(() => lab.make('UnknownProduct', 1)).toThrow('Unknown recipe');
     });
 });
+
+describe('Chained Reactions', () => {
+    const breadReactions = {
+        'Dough': [{ substance: 'Flour', quantity: 1 }, { substance: 'Water', quantity: 1 }],
+        'Bread': [{ substance: 'Dough', quantity: 1 }, { substance: 'Heat', quantity: 1 }]
+    };
+
+    it('should use a manufactured product (stored) as an ingredient for another reaction', () => {
+        const lab = new Laboratory(['Flour', 'Water', 'Heat'], breadReactions);
+        
+        lab.add('Flour', 10);
+        lab.add('Water', 10);
+        lab.add('Heat', 10);
+
+        lab.make('Dough', 5);
+        expect(lab.getQuantity('Dough')).toBe(5);
+
+        lab.make('Bread', 3);
+        
+        expect(lab.getQuantity('Bread')).toBe(3);
+        expect(lab.getQuantity('Dough')).toBe(2);
+        expect(lab.getQuantity('Heat')).toBe(7);
+    });
+    
+    it('should fail cleanly if intermediate product is missing from stock', () => {
+            const lab = new Laboratory(['Flour', 'Water', 'Heat'], breadReactions);
+            lab.add('Heat', 10);
+            
+            const made = lab.make('Bread', 1);
+            expect(made).toBe(0);
+    });
+});
