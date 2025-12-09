@@ -158,3 +158,28 @@ describe('Chained Reactions', () => {
             expect(made).toBe(0);
     });
 });
+
+describe('Optional: Circular Dependencies', () => {
+    it('should handle circular dependencies by using available stock to break the loop', () => {
+        
+        const reactions = {
+            'A': [{ substance: 'B', quantity: 1 }, { substance: 'C', quantity: 1 }],
+            'C': [{ substance: 'A', quantity: 0.2 }, { substance: 'D', quantity: 1 }]
+        };
+        
+        const lab = new Laboratory(['B', 'D', 'A'], reactions);
+        
+        lab.add('B', 1);
+        lab.add('C', 0.5);
+        lab.add('A', 0.1);
+        lab.add('D', 0.5);
+
+        const produced = lab.make('A', 1);
+
+        expect(produced).toBe(1);
+        expect(lab.getQuantity('A')).toBe(1);
+        expect(lab.getQuantity('B')).toBe(0);
+        expect(lab.getQuantity('C')).toBe(0);
+        expect(lab.getQuantity('D')).toBe(0);
+    });
+});
