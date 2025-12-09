@@ -41,4 +41,38 @@ export class Laboratory {
     getReactions(): Reactions {
         return this.reactions;
     }
+
+    make(product: string, desiredQty: number): number {
+        if (!this.reactions[product]) throw new Error('Unknown recipe');
+        
+        let rec = this.reactions[product];
+        let max = desiredQty;
+
+        for (let ing of rec) {
+            let ingName = ing.substance;
+            let neededPerUnit = ing.quantity;
+            let stock = this.stock.get(ingName);
+            
+            if(stock === undefined) {
+                 stock = 0; 
+            }
+            
+            let possible = stock / neededPerUnit;
+            if (possible < max) {
+                max = possible;
+            }
+        }
+
+        for (let ing of rec) {
+            let ingName = ing.substance;
+            let neededPerUnit = ing.quantity;
+            let current = this.stock.get(ingName) || 0;
+            this.stock.set(ingName, current - (neededPerUnit * max));
+        }
+
+        let currentP = this.stock.get(product) || 0;
+        this.stock.set(product, currentP + max);
+
+        return max;
+    }
 }
