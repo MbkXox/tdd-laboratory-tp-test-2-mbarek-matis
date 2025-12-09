@@ -1,23 +1,25 @@
+export interface Ingredient {
+    substance: string;
+    quantity: number;
+}
+
+export type Reactions = Record<string, Ingredient[]>;
+
 export class Laboratory {
     private stock: Map<string, number>;
-    public allReactions: any;
+    private reactions: Reactions;
 
-    constructor(substances: string[], reactions: any = {}) {
+    constructor(substances: string[], reactions: Reactions = {}) {
         this.stock = new Map();
-        this.allReactions = reactions;
+        this.reactions = reactions;
 
-        // Init substances
         substances.forEach(s => this.stock.set(s, 0));
 
-        // Init produits : boucle for..in sur l'objet any
-        for (let key in reactions) {
-            if (Object.prototype.hasOwnProperty.call(reactions, key)) {
-                // Si pas déjà présent (pour gérer la collision)
-                if (!this.stock.has(key)) {
-                    this.stock.set(key, 0);
-                }
+        Object.keys(reactions).forEach(product => {
+            if (!this.stock.has(product)) {
+                this.stock.set(product, 0);
             }
-        }
+        });
     }
 
     getQuantity(substance: string): number {
@@ -33,6 +35,10 @@ export class Laboratory {
         }
         
         const currentAmount = this.getQuantity(substance);
-        this.stock.set(substance, currentAmount + quantity);
+        this.stock.set(substance, Math.round((currentAmount + quantity) * 10000) / 10000);
+    }
+
+    getReactions(): Reactions {
+        return this.reactions;
     }
 }
