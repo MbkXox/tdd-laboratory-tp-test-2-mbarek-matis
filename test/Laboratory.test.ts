@@ -80,3 +80,49 @@ describe('Reactions & Products', () => {
         expect(lab.getQuantity('Water')).toBe(0);
     });
 });
+
+describe('Making Products (Basic)', () => {
+    const simpleReactions = {
+        'C': [{ substance: 'A', quantity: 2 }, { substance: 'B', quantity: 5 }]
+    };
+
+    it('should make product when ingredients are sufficient', () => {
+        const lab = new Laboratory(['A', 'B'], simpleReactions);
+        lab.add('A', 10);
+        lab.add('B', 25);
+        
+        const produced = lab.make('C', 2);
+        
+        expect(produced).toBe(2);
+        expect(lab.getQuantity('C')).toBe(2);
+        expect(lab.getQuantity('A')).toBe(6);
+        expect(lab.getQuantity('B')).toBe(15);
+    });
+
+    it('should be limited by the scarcest ingredient', () => {
+        const lab = new Laboratory(['A', 'B'], simpleReactions);
+        lab.add('A', 10);
+        lab.add('B', 5);
+        
+        const produced = lab.make('C', 5);
+        
+        expect(produced).toBe(1);
+        expect(lab.getQuantity('C')).toBe(1);
+        expect(lab.getQuantity('A')).toBe(8);
+        expect(lab.getQuantity('B')).toBe(0);
+    });
+
+    it('should produce 0 if one ingredient is missing (0 stock)', () => {
+        const lab = new Laboratory(['A', 'B'], simpleReactions);
+        lab.add('A', 10);
+
+        expect(lab.make('C', 1)).toBe(0);
+        expect(lab.getQuantity('C')).toBe(0);
+        expect(lab.getQuantity('A')).toBe(10);
+    });
+
+    it('should throw error if recipe does not exist', () => {
+        const lab = new Laboratory(['A']);
+        expect(() => lab.make('UnknownProduct', 1)).toThrow('Unknown recipe');
+    });
+});
