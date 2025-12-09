@@ -22,3 +22,34 @@ describe('Laboratory - Initialization', () => {
         expect(lab.getQuantity('H2O')).toBe(0);
     });
 });
+
+describe('Add Stock', () => {
+    it('should add quantity to an existing substance', () => {
+        const lab = new Laboratory(['H2O']);
+        lab.add('H2O', 10);
+        expect(lab.getQuantity('H2O')).toBe(10);
+    });
+
+    it('should accumulate quantities correctly (integers and floats)', () => {
+        const lab = new Laboratory(['H2O']);
+        lab.add('H2O', 10);
+        lab.add('H2O', 0.5);
+        expect(lab.getQuantity('H2O')).toBe(10.5);
+    });
+
+    it('should do nothing if adding 0', () => {
+        const lab = new Laboratory(['H2O']);
+        lab.add('H2O', 0);
+        expect(lab.getQuantity('H2O')).toBe(0);
+    });
+
+    it('should throw error for negative quantity', () => {
+        const lab = new Laboratory(['H2O']);
+        expect(() => lab.add('H2O', -1)).toThrow('Quantity must be positive');
+    });
+
+    it('should throw error when adding to unknown substance', () => {
+        const lab = new Laboratory(['H2O']);
+        expect(() => lab.add('Gold', 10)).toThrow('Unknown substance');
+    });
+});
